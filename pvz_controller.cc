@@ -38,7 +38,7 @@ bool GetProcHandle(void) {
   if (pvz_pid) {
     printf_s("游戏进程PID：%lu\n", pvz_pid);
   } else {
-    printf_s("获取进程PID失败，错误代码： % lu\n", GetLastError());
+    printf_s("获取进程PID失败，错误代码：%lu\n", GetLastError());
     return false;
   }
 
