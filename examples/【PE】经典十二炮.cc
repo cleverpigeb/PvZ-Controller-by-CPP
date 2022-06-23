@@ -38,51 +38,50 @@ int main(void) {
       // 以下为修改区
 
       switch (wave) {
-      case 10:
-        PreJudge(55, true);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 10:
+          PreJudge(55, true);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(3730 - 1000);
-        Card(7);
-        Pnt(std::make_pair(2., 9.));
-        std::puts("在第2行、第9列放置了一颗樱桃炸弹");
+          Sleep(3730 - 1000);
+          Card(7);
+          Pnt(std::make_pair(2., 9.));
+          std::puts("在第2行、第9列放置了一颗樱桃炸弹");
 
-        break;
+          break;
 
-      case 20:
-        PreJudge(150, true);
-        Cannon(4, 7, used_cannons);
+        case 20:
+          PreJudge(150, true);
+          Cannon(4, 7, used_cannons);
 
-        Sleep(950);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+          Sleep(950);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(550 + 4000);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+          Sleep(550 + 4000);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        break;
+          break;
 
-      default:
-        PreJudge(95, false);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        default:
+          PreJudge(95, false);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        if (9 == wave || 19 == wave) {
-          Sleep(4000);
-          RecoverCannon(2, 9, used_cannons);
-          RecoverCannon(5, 9, used_cannons);
-          RecoverCannon(2, 9, used_cannons);
-          RecoverCannon(5, 9, used_cannons);
-        }
-        else {
-          Sleep(1000);
-        }
+          if (9 == wave || 19 == wave) {
+            Sleep(4000);
+            RecoverCannon(2, 9, used_cannons);
+            RecoverCannon(5, 9, used_cannons);
+            RecoverCannon(2, 9, used_cannons);
+            RecoverCannon(5, 9, used_cannons);
+          } else {
+            Sleep(1000);
+          }
 
-        break;
+          break;
       }
 
       // 以上为修改区
