@@ -12,7 +12,7 @@
 
 constexpr int kMaxCannonNum(30);
 
-// 以下为修改区
+// 以下为修改区（玉米加农炮的位置）
 
 int kCannonList[kMaxCannonNum][5] = { 0 };
 
@@ -24,7 +24,7 @@ int main(void) {
   // 记录用过的炮，并同时记录发炮时的时间戳
   std::queue<std::pair<time_t, int> >* used_cannons;
 
-  // 以下为修改区
+  // 以下为修改区（地图类型和玉米加农炮的数量）
   if (InitController('\0', 0, kCannonList, &used_cannons)) {
   // 以上为修改区
     // 如果想要手动选卡可以在下面一行前面加上“//”
@@ -35,7 +35,7 @@ int main(void) {
     for (int wave(1); wave < 21; ++wave) {
       printf_s("\n正在准备处理第 %d 波的敌人\n", wave);
 
-      // 以下为修改区
+      // 以下为修改区（主体节奏）
 
 
 
@@ -50,7 +50,7 @@ int main(void) {
 }
 
 void ChoosingCards(void) {
-  // 以下为修改区
+  // 以下为修改区（要选的植物卡）
   std::array<std::array<int, 3>, 10> cards{ 0 };
   // 以上为修改区
 
