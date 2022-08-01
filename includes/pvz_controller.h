@@ -37,6 +37,9 @@ extern "C" CONTROLLER_API void Click(double /* x */, double /* y */,
 // 模拟鼠标点击（对按钮专用）
 extern "C" CONTROLLER_API void ClickButton(double /* x */, double /* y */,
                                            bool /* is_right */);
+// 前台模拟鼠标点击
+extern "C" CONTROLLER_API void ClickForeground(double /* x */, double /* y */,
+                                               bool /* is_right */);
 // 在选卡界面选卡
 extern "C" CONTROLLER_API void ChooseCard(int /* row */, int /* column */,
                                           bool /* is_imitater */);
@@ -66,9 +69,9 @@ bool GetProcHandle(void);  // 获取进程句柄
 bool GetPvzHwnd(void);  // 获取窗口句柄
 time_t GetTimeStamp(void); // 获取时间戳
 uint32_t ReadMemory(DWORD /* mem_address */);  // 获取内存静态地址
-void MouseDown(bool /* is_right */);  // 鼠标落下
-void MouseMove(double /* x */, double /* y */);  // 移动鼠标
-void MouseUp(bool /* is_right */);  // 鼠标抬起
+void MouseDown(bool /* is_right */);  // 鼠标落下（前台）
+void MouseMove(double /* x */, double /* y */);  // 移动鼠标（前台）
+void MouseUp(bool /* is_right */);  // 鼠标抬起（前台）
 void UsedCannon(
   std::queue<std::pair<time_t, int> >* /* used_cannons */
 );  // 处理被用过的炮

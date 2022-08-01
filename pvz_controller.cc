@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <Windows.h>
+#include <WinUser.h>
 
 constexpr uint32_t kBaseAddress(0x00731C50);  // Steam植僵年度版的内存基地址
 constexpr int kMaxCannonNum(30);
@@ -96,7 +97,7 @@ uint32_t ReadMemory(DWORD mem_address) {
   return memory_address;
 }
 
-// 鼠标点下
+// 鼠标点下（前台）
 void MouseDown(bool is_right) {
   INPUT inputs({ 0 });
   inputs.type = INPUT_MOUSE;
@@ -110,7 +111,7 @@ void MouseDown(bool is_right) {
   SendInput(1, &inputs, sizeof(inputs));
 }
 
-// 移动鼠标
+// 移动鼠标（前台）
 void MouseMove(double x, double y) {
   double fx(x * (65535.0 / kScreenWidth));
   double fy(y * (65535.0 / kScreenHeight));
@@ -124,7 +125,7 @@ void MouseMove(double x, double y) {
   SendInput(1, &inputs, sizeof(inputs));
 }
 
-// 鼠标抬起
+// 鼠标抬起（前台）
 void MouseUp(bool is_right) {
   INPUT inputs({ 0 });
   inputs.type = INPUT_MOUSE;
@@ -241,7 +242,7 @@ void Cannon(double row, double column,
   Pnt(std::make_pair(row, column));
   SafeClick();
 
-  printf_s("位于第%d行、第%d列的加农炮向第%lf行、第%lf列发射了一发炮\n",
+  printf_s("位于第%d行、第%d列的加农炮向第%g行、第%g列发射了一发炮\n",
            kCannonList[kNowCannon][0], kCannonList[kNowCannon][1],
            row, column);
 
@@ -257,6 +258,43 @@ void Card(int num) {
 
 // 模拟鼠标点击
 void Click(double x, double y, bool is_right) {
+  // MouseMove(x + kCliPos.x, y + kCliPos.y);  // 移动鼠标
+
+  LPARAM mouse_pos(MAKELPARAM(x, y));
+  PostMessage(kPvzHwnd, WM_MOUSEMOVE, 0, mouse_pos); // 移动鼠标
+
+  if (is_right) {  // 右键
+    // MouseDown(true);  // 鼠标落下
+    // MouseUp(true);  // 鼠标抬起
+
+    PostMessage(kPvzHwnd, WM_RBUTTONDOWN, 0, mouse_pos);  // 鼠标落下
+    PostMessage(kPvzHwnd, WM_RBUTTONUP, 0, mouse_pos);  // 鼠标抬起
+  } else {  // 左键
+    // MouseDown(false);
+    // MouseUp(false);
+
+    PostMessage(kPvzHwnd, WM_LBUTTONDOWN, 0, mouse_pos);
+    PostMessage(kPvzHwnd, WM_LBUTTONUP, 0, mouse_pos);
+  }
+}
+
+// 与ClickForgnd()唯一的区别是中间多了等待时间
+void ClickButton(double x, double y, bool is_right) {
+  MouseMove(x + kCliPos.x, y + kCliPos.y);
+
+  if (is_right) {  // 右键
+    MouseDown(true);  // 鼠标落下
+    Sleep(100);
+    MouseUp(true);  // 鼠标抬起
+  } else {  // 左键
+    MouseDown(false);
+    Sleep(100);
+    MouseUp(false);
+  }
+}
+
+// 前台模拟鼠标点击
+void ClickForgnd(double x, double y, bool is_right) {
   MouseMove(x + kCliPos.x, y + kCliPos.y);  // 移动鼠标
 
   if (is_right) {  // 右键
@@ -268,21 +306,6 @@ void Click(double x, double y, bool is_right) {
   }
 }
 
-// 与Click()唯一的区别是中间多了等待时间
-void ClickButton(double x, double y, bool is_right) {
-  MouseMove(x + kCliPos.x, y + kCliPos.y);  // 移动鼠标
-
-  if (is_right) {  // 右键
-    MouseDown(true);
-    Sleep(100);  // 等待0.1秒
-    MouseUp(true);
-  } else {  // 左键
-    MouseDown(false);
-    Sleep(100);
-    MouseUp(false);
-  }
-}
-
 // 在选卡界面选卡
 void ChooseCard(int row, int column, bool is_imitater) {
   double x(0), y(0);
@@ -290,7 +313,7 @@ void ChooseCard(int row, int column, bool is_imitater) {
   // 判断是否是模仿者
   if (is_imitater) {
     std::puts("正在打开模仿者界面");
-    Click(500, 543, false);
+    ClickForgnd(500, 543, false);
     Sleep(200);
     x = 190;
     y = 125;
@@ -304,7 +327,7 @@ void ChooseCard(int row, int column, bool is_imitater) {
   // 将行、列转化为窗口坐标，并点击
   x += 25 + (column - 1) * 53;
   y += 35 + (row - 1) * 70;
-  Click(x, y, false);
+  ClickForgnd(x, y, false);
 }
 
 // 一起摇滚吧！
@@ -327,12 +350,17 @@ void PreJudge(int adva_time, bool is_huge_wave) {
 
 // 按一次空格，可用于女仆
 void PressSpace(void) {
+  /*
   INPUT inputs({ 0 });
   inputs.type = INPUT_KEYBOARD;
   inputs.ki.wVk = VK_SPACE;
   SendInput(1, &inputs, sizeof(inputs));  // 空格键按下
   inputs.ki.dwFlags = KEYEVENTF_KEYUP;
   SendInput(1, &inputs, sizeof(inputs));  // 空格键抬起
+  */
+
+  PostMessage(kPvzHwnd, WM_KEYDOWN, 0x20, 0);  // 空格键按下
+  PostMessage(kPvzHwnd, WM_KEYUP, 0x20, 0);  // 空格键抬起
 }
 
 // 点击场地格子
