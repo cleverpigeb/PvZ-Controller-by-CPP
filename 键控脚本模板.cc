@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
@@ -10,11 +11,13 @@
 
 #include "pvz_controller.h"
 
-constexpr int kMaxCannonNum(30);
+constexpr int kMaxCannonNum(24);
+constexpr int kMaxIceNum(54);
 
 // 以下为修改区（玉米加农炮的位置）
 
-int kCannonList[kMaxCannonNum][5] = { 0 };
+int kCannonList[kMaxCannonNum + 5][5] = { 0 };
+int kIceList[kMaxIceNum + 5][5] = { 0 };
 
 void ChoosingCards(void);
 
@@ -25,8 +28,12 @@ int main(void) {
   std::queue<std::pair<time_t, int> >* used_cannons;
 
   // 以下为修改区（地图类型和玉米加农炮的数量）
-  if (InitController('\0', 0, kCannonList, &used_cannons)) {
+  if (InitController('\0', 0, kCannonList, &used_cannons,
+                     0, kIceList, 0, 0, 0, 0)) {
   // 以上为修改区
+    // 如果想要关闭自动补冰可以在下面一行前面加上“//”
+    StartIceFiller();
+
     // 如果想要手动选卡可以在下面一行前面加上“//”
     ChoosingCards();
 

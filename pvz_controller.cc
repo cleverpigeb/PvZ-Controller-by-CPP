@@ -6,27 +6,43 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
+#include <thread>
 #include <utility>
 
 #include <Windows.h>
 #include <WinUser.h>
 
 constexpr uint32_t kBaseAddress(0x00731C50);  // Steam植僵年度版的内存基地址
-constexpr int kMaxCannonNum(30);
+constexpr int kMaxCannonNum(24);
+constexpr int kMaxIceNum(54);
 
+static bool kIsImCoffee(false);  // 是否要补模仿咖啡豆
+static bool kIsImIce(false);  //是否要补模仿寒冰菇
+static bool kIsRun(false);  // 标志PCC是否正在运行中
 static char kScene('\0');  // 场地（泳池为“P”，白天为“D”，以此类推）
 static double kScreenHeight(0.);  // 屏幕的高
 static double kScreenWidth(0.);  // 屏幕的宽
 static int kCannonNum(0);  // 炮的数量
+static int kCoffeeCard(0);  // 咖啡豆是第几张卡
+static int kIceCard(0);  // 冰是第几张卡
+static int kIceNum(0);  // 冰的数量
+static int kImCoffeeCard(0);  // 模仿咖啡豆是第几张卡
+static int kImIceCard(0);  // 模仿冰是第几张卡
 static int kNowCannon(0);  // 现在开到第几门炮了
+static int kNowIce(0);  // 现在点到第几株冰了
+static time_t kIceTime(0);  // 普通寒冰菇上次被使用的时间
+static time_t kImIceTime(0);  // 模仿寒冰菇上次被使用的时间
 
 static DWORD kMemoryAddress(0);  // 下一波僵尸刷新时间所对应的内存地址
 static HANDLE kProcHandle;  // 植僵进程句柄
 static HWND kPvzHwnd;  // 窗口句柄
 static POINT kCliPos;  // 窗口服务区左上角坐标
 
-static bool kIsUsed[kMaxCannonNum]{ false };  // 炮是否被用过了
-static int kCannonList[kMaxCannonNum][5]{ 0 };  // 炮的位置
+static bool kIsUsed[kMaxCannonNum + 5]{ false };  // 炮是否被用过了
+static int kCannonList[kMaxCannonNum + 5][5]{ 0 };  // 炮的位置
+static int kIceList[kMaxIceNum + 5][5]{ 0 };  // 冰的位置
+
+std::queue<std::pair<time_t, int> > kUsedIce;  // 等待补冰的请求
 
 // 获取游戏进程句柄并检测是否成功
 bool GetProcHandle(void) {
@@ -97,6 +113,55 @@ uint32_t ReadMemory(DWORD mem_address) {
   return memory_address;
 }
 
+// 补冰线程
+void FillIce(void) {
+  while (kIsRun) {
+    if (!kUsedIce.empty()) {
+      auto now_task(kUsedIce.front());
+      kUsedIce.pop();
+
+      if (GetTimeStamp() - now_task.first < 1990 + 1000)
+        Sleep(1990 + 1000 - (GetTimeStamp() - now_task.first));
+
+      if (kImIceCard) {
+        if (kIsImIce) {
+          if (kImIceTime && GetTimeStamp() - kImIceTime < 50010)
+            Sleep(50010 - (GetTimeStamp() - kImIceTime));
+
+          Card(kImIceCard);
+          Pnt(std::make_pair(kIceList[now_task.second][0],
+                             kIceList[now_task.second][1]));
+          kImIceTime = GetTimeStamp();
+          printf_s("已在第%d路、第%d列放置了一株模仿寒冰菇\n",
+                   kIceList[now_task.second][0], kIceList[now_task.second][1]);
+        } else {
+          if (kIceTime && GetTimeStamp() - kIceTime < 50010)
+            Sleep(50010 - (GetTimeStamp() - kIceTime));
+
+          Card(kIceCard);
+          Pnt(std::make_pair(kIceList[now_task.second][0],
+                             kIceList[now_task.second][1]));
+          kIceTime = GetTimeStamp();
+          printf_s("已在第%d路、第%d列放置了一株寒冰菇\n",
+                   kIceList[now_task.second][0], kIceList[now_task.second][1]);
+        }
+
+        kIsImIce = !kIsImIce;
+      } else {
+        if (kIceTime && GetTimeStamp() - kIceTime < 50010)
+          Sleep(50010 - (GetTimeStamp() - kIceTime));
+
+        Card(kIceCard);
+        Pnt(std::make_pair(kIceList[now_task.second][0],
+                           kIceList[now_task.second][1]));
+        kIceTime = GetTimeStamp();
+        printf_s("已在第%d路、第%d列放置了一株寒冰菇\n",
+                 kIceList[now_task.second][0], kIceList[now_task.second][1]);
+      }
+    }
+  }
+}
+
 // 鼠标点下（前台）
 void MouseDown(bool is_right) {
   INPUT inputs({ 0 });
@@ -152,7 +217,9 @@ void UsedCannon(std::queue<std::pair<time_t, int> >* used_cannons) {
 
 // 初始化键控器
 bool InitController(char scene, int cannon_num, int cannon_list[][5],
-                    std::queue<std::pair<time_t, int> >** used_cannons) {
+                    std::queue<std::pair<time_t, int> >** used_cannons,
+                    int ice_num, int ice_list[][5], int coffee_card,
+                    int im_coffee_card, int ice_card, int im_ice_card) {
   // 设置输出编码为UTF-8
   SetConsoleOutputCP(65001);
 
@@ -173,6 +240,17 @@ bool InitController(char scene, int cannon_num, int cannon_list[][5],
   kCannonNum = cannon_num;
   std::copy(&cannon_list[0][0], &cannon_list[0][0] + kMaxCannonNum * 5,
             &kCannonList[0][0]);
+
+  // 获取冰的数量和位置
+  kIceNum = ice_num;
+  std::copy(&ice_list[0][0], &ice_list[0][0] + kMaxIceNum * 5,
+            &kIceList[0][0]);
+
+  // 获取咖啡豆、模仿咖啡豆、冰和模仿冰的植物卡位置
+  kCoffeeCard = coffee_card;
+  kImCoffeeCard = im_coffee_card;
+  kIceCard = ice_card;
+  kImIceCard = im_ice_card;
 
   // 获取窗口句柄并判断是否成功
   if (!GetPvzHwnd()) {
@@ -204,6 +282,8 @@ bool InitController(char scene, int cannon_num, int cannon_list[][5],
 
   std::puts("======= 初始化完毕 =======");
   std::puts("\n正在准备开始，请在五秒内切换至游戏界面");
+
+  kIsRun = true;
 
   // 给大家留个五秒的反应时间
   Sleep(5000);
@@ -242,7 +322,7 @@ void Cannon(double row, double column,
   Pnt(std::make_pair(row, column));
   SafeClick();
 
-  printf_s("位于第%d行、第%d列的加农炮向第%g行、第%g列发射了一发炮\n",
+  printf_s("位于第%d路、第%d列的加农炮向第%g路、第%g列发射了一发炮\n",
            kCannonList[kNowCannon][0], kCannonList[kNowCannon][1],
            row, column);
 
@@ -370,20 +450,20 @@ void Pnt(const std::pair<double, double>& pnt) {
 
   // 判断场景
   switch (kScene) {
-    case 'P':  // 泳池
-      Click(80 * column, 30 + 85 * row, false);
+    case 'P': case 'F':  // 泳池和浓雾
+      Click(80 * column, 55 + 85 * row, false);
       break;
 
-    case 'D':  // 白天
-      Click(80 * column, 30 + 100 * row, false);
+    case 'R': case 'M':  // 屋顶和月夜
+      Click(
+        80 * column,
+        column > 5 ? 45 + 85 * row : 45 + 85 * row + 20 * (6 - column),
+        false
+      );
       break;
 
     default:  // 其他
-      Click(
-        80 * column,
-        85 * row + (column > 5 ? 0 : (120 - 20 * column)),
-        false
-      );
+      Click(80 * column, 40 + 100 * row, false);
       break;
   }
 }
@@ -393,6 +473,7 @@ void QuitController(std::queue<std::pair<time_t, int> >** used_cannons) {
   std::puts("\n感谢您使用本键控工具");
   delete* used_cannons;
   CloseHandle(kProcHandle);  // 关闭进程句柄
+  kIsRun = false;
   std::puts("请按回车退出程序");
   std::getchar();
 }
@@ -429,4 +510,38 @@ void RecoverCannon(double row, double column,
 // 安全点击
 void SafeClick(void) {
   Click(60, 50, true);
+}
+
+// 启动自动补冰
+void StartIceFiller(void) {
+  std::thread fill_ice_th(FillIce);
+  fill_ice_th.detach();
+}
+
+// 点冰
+void WakeIce(void) {
+  kNowIce %= kIceNum;
+
+  if (kImCoffeeCard) {
+    if (kIsImCoffee) {
+      Card(kImCoffeeCard);
+      Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
+      printf_s("已将模仿咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
+               kIceList[kNowIce][1]);
+    } else {
+      Card(kCoffeeCard);
+      Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
+      printf_s("已将咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
+               kIceList[kNowIce][1]);
+    }
+
+    kIsImCoffee = !kIsImCoffee;
+  } else {
+    Card(kCoffeeCard);
+    Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
+    printf_s("已将咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
+             kIceList[kNowIce][1]);
+  }
+
+  kUsedIce.push(std::make_pair(GetTimeStamp(), kNowIce++));
 }

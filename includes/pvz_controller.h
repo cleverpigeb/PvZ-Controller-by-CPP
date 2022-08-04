@@ -19,7 +19,13 @@ extern "C" CONTROLLER_API bool InitController(
   char scene,
   int cannon_num,
   int cannon_list[][5],
-  std::queue<std::pair<time_t, int> >** used_cannons
+  std::queue<std::pair<time_t, int> >**used_cannons,
+  int ice_num,
+  int ice_list[][5],
+  int coffee_card,
+  int im_coffee_card,
+  int ice_card,
+  int im_ice_card
 );
 // 读取刷怪时间
 extern "C" CONTROLLER_API uint32_t CountDown(void);
@@ -64,11 +70,16 @@ extern "C" CONTROLLER_API void RecoverCannon(
 );
 // 安全点击，防止点击太快导致误操作
 extern "C" CONTROLLER_API void SafeClick(void);
+// 启动自动补冰
+extern "C" CONTROLLER_API void StartIceFiller(void);
+// 点冰
+extern "C" CONTROLLER_API void WakeIce(void);
 
 bool GetProcHandle(void);  // 获取进程句柄
 bool GetPvzHwnd(void);  // 获取窗口句柄
 time_t GetTimeStamp(void); // 获取时间戳
 uint32_t ReadMemory(DWORD /* mem_address */);  // 获取内存静态地址
+void FillIce(void);  // 补冰线程
 void MouseDown(bool /* is_right */);  // 鼠标落下（前台）
 void MouseMove(double /* x */, double /* y */);  // 移动鼠标（前台）
 void MouseUp(bool /* is_right */);  // 鼠标抬起（前台）
