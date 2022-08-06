@@ -17,7 +17,7 @@
 constexpr int kMaxCannonNum(24);
 constexpr int kMaxIceNum(54);
 
-// 以下为修改区（玉米加农炮的位置）
+// 以下为修改区（玉米加农炮的位置和存冰位的位置）
 
 int kCannonList[kMaxCannonNum + 5][5] = { {1, 1}, {1, 3}, {1, 5}, {1, 7},
                                           {2, 1}, {2, 3}, {2, 5}, {2, 7},
@@ -35,11 +35,11 @@ int main(void) {
   // 记录用过的炮，并同时记录发炮时的时间戳
   std::queue<std::pair<time_t, int> >* used_cannons;
 
-  // 以下为修改区（地图类型和玉米加农炮的数量）
+  // 以下为修改区（地图类型、玉米加农炮的数量、存冰位的数量和各个植物卡的位次）
   if (InitController('P', 24, kCannonList, &used_cannons,
-    1, kIceList, 3, 0, 1, 2)) {
-    // 以上为修改区
-      // 如果想要关闭自动补冰可以在下面一行前面加上“//”
+                     1, kIceList, false, 3, 1, 2)) {
+  // 以上为修改区
+    // 如果想要关闭自动补冰可以在下面一行前面加上“//”
     StartIceFiller();
 
     // 如果想要手动选卡可以在下面一行前面加上“//”
@@ -53,93 +53,93 @@ int main(void) {
       // 以下为修改区（主体节奏）
 
       switch (wave) {
-      case 1: case 4: case 7: case 11: case 14: case 17:
-        PreJudge(15, false);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 1: case 4: case 7: case 11: case 14: case 17:
+          PreJudge(15, false);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(1080);
-        Cannon(1, 7.7, used_cannons);
-        Cannon(5, 7.7, used_cannons);
+          Sleep(1080);
+          Cannon(1, 7.7, used_cannons);
+          Cannon(5, 7.7, used_cannons);
 
-        break;
+          break;
 
-      case 2: case 5: case 8: case 12: case 15: case 18:
-        PreJudge(95, false);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 2: case 5: case 8: case 12: case 15: case 18:
+          PreJudge(95, false);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(3730 - 2980);
-        WakeIce();
+          Sleep(3730 - 2980);
+          WakeIce();
 
-        Sleep(300);
+          Sleep(300);
 
-        break;
+          break;
 
-      case 3: case 6: case 13: case 16:
-        PreJudge(95, false);
-        Cannon(2, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 3: case 6: case 13: case 16:
+          PreJudge(95, false);
+          Cannon(2, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(1080);
-        Cannon(1, 8.8, used_cannons);
-        Cannon(5, 8.8, used_cannons);
+          Sleep(1080);
+          Cannon(1, 8.8, used_cannons);
+          Cannon(5, 8.8, used_cannons);
 
-        break;
+          break;
 
-      case 9: case 19:
-        PreJudge(95, false);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 9: case 19:
+          PreJudge(95, false);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(1080);
-        Cannon(1, 8.8, used_cannons);
-        Cannon(5, 8.8, used_cannons);
+          Sleep(1080);
+          Cannon(1, 8.8, used_cannons);
+          Cannon(5, 8.8, used_cannons);
 
-        Sleep(7000 - 1080 + 950);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+          Sleep(7000 - 1080 + 950);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        break;
+          break;
 
-      case 10:
-        PreJudge(55, true);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+        case 10:
+          PreJudge(55, true);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(1080);
-        Cannon(1, 8.8, used_cannons);
-        Cannon(5, 8.8, used_cannons);
+          Sleep(1080);
+          Cannon(1, 8.8, used_cannons);
+          Cannon(5, 8.8, used_cannons);
 
-        break;
+          break;
 
-      case 20:
-        PreJudge(140, true);
-        Cannon(4, 6, used_cannons);
-        Cannon(4, 8, used_cannons);
+        case 20:
+          PreJudge(140, true);
+          Cannon(4, 6, used_cannons);
+          Cannon(4, 8, used_cannons);
 
-        Sleep(1400 - 550);
-        Cannon(1, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+          Sleep(1400 - 550);
+          Cannon(1, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        Sleep(1080);
-        Cannon(1, 9, used_cannons);
-        Cannon(2, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
-        Cannon(5, 9, used_cannons);
+          Sleep(1080);
+          Cannon(1, 9, used_cannons);
+          Cannon(2, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
+          Cannon(5, 9, used_cannons);
 
-        break;
+          break;
 
-      default:
-        assert(false);
+        default:
+          assert(false);
       }
 
       // 以上为修改区

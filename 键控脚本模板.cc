@@ -14,7 +14,7 @@
 constexpr int kMaxCannonNum(24);
 constexpr int kMaxIceNum(54);
 
-// 以下为修改区（玉米加农炮的位置）
+// 以下为修改区（玉米加农炮的位置和存冰位的位置）
 
 int kCannonList[kMaxCannonNum + 5][5] = { 0 };
 int kIceList[kMaxIceNum + 5][5] = { 0 };
@@ -27,12 +27,12 @@ int main(void) {
   // 记录用过的炮，并同时记录发炮时的时间戳
   std::queue<std::pair<time_t, int> >* used_cannons;
 
-  // 以下为修改区（地图类型和玉米加农炮的数量）
-  if (InitController('\0', 0, kCannonList, &used_cannons,
-                     0, kIceList, 0, 0, 0, 0)) {
+  // 以下为修改区（地图类型、玉米加农炮的数量、存冰位的数量和各个植物卡的位次）
+  if (InitController('P', 12, kCannonList, &used_cannons,
+                     0, kIceList, false, 0, 0, 0)) {
   // 以上为修改区
-    // 如果想要关闭自动补冰可以在下面一行前面加上“//”
-    StartIceFiller();
+    // 如果想要开启自动补冰可以把下面一行前面的“//”去掉
+    // StartIceFiller();
 
     // 如果想要手动选卡可以在下面一行前面加上“//”
     ChoosingCards();

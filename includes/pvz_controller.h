@@ -22,8 +22,8 @@ extern "C" CONTROLLER_API bool InitController(
   std::queue<std::pair<time_t, int> >**used_cannons,
   int ice_num,
   int ice_list[][5],
+  bool is_im_coffee,
   int coffee_card,
-  int im_coffee_card,
   int ice_card,
   int im_ice_card
 );
@@ -44,8 +44,8 @@ extern "C" CONTROLLER_API void Click(double /* x */, double /* y */,
 extern "C" CONTROLLER_API void ClickButton(double /* x */, double /* y */,
                                            bool /* is_right */);
 // 前台模拟鼠标点击
-extern "C" CONTROLLER_API void ClickForeground(double /* x */, double /* y */,
-                                               bool /* is_right */);
+extern "C" CONTROLLER_API void ClickForgnd(double /* x */, double /* y */,
+                                           bool /* is_right */);
 // 在选卡界面选卡
 extern "C" CONTROLLER_API void ChooseCard(int /* row */, int /* column */,
                                           bool /* is_imitater */);

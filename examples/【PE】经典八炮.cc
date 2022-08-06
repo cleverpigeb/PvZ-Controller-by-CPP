@@ -1,6 +1,7 @@
 // 【PE】经典八炮.cc：PCC键控工具的演示脚本，用于演示泳池经典八炮
 // 作者：him君
 
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
@@ -13,12 +14,14 @@
 
 #include "pvz_controller.h"
 
-constexpr int kMaxCannonNum(30);
+constexpr int kMaxCannonNum(24);
+constexpr int kMaxIceNum(54);
 
-// 以下为修改区（玉米加农炮的位置）
+// 以下为修改区（玉米加农炮的位置和存冰位的位置）
 
-int kCannonList[kMaxCannonNum][5] = { {1, 5}, {2, 5}, {3, 1}, {3, 3},
-                                      {4, 1}, {4, 3}, {5, 5}, {6, 5} };
+int kCannonList[kMaxCannonNum + 5][5] = { {1, 5}, {2, 5}, {3, 1}, {3, 3},
+                                          {4, 1}, {4, 3}, {5, 5}, {6, 5} };
+int kIceList[kMaxIceNum + 5][5] = { 0 };
 
 void ChoosingCards(void);
 
@@ -28,9 +31,13 @@ int main(void) {
   // 记录用过的炮，并同时记录发炮时的时间戳
   std::queue<std::pair<time_t, int> >* used_cannons;
 
-  // 以下为修改区（地图类型和玉米加农炮的数量）
-  if (InitController('P', 8, kCannonList, &used_cannons)) {
+  // 以下为修改区（地图类型、玉米加农炮的数量、存冰位的数量和各个植物卡的位次）
+  if (InitController('P', 8, kCannonList, &used_cannons,
+                     0, kIceList, false, 0, 0, 0)) {
   // 以上为修改区
+    // 如果想要关闭自动补冰可以在下面一行前面加上“//”
+    // StartIceFiller();
+
     // 如果想要手动选卡可以在下面一行前面加上“//”
     ChoosingCards();
 

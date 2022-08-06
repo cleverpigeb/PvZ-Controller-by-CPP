@@ -16,17 +16,16 @@ constexpr uint32_t kBaseAddress(0x00731C50);  // Steam植僵年度版的内存�
 constexpr int kMaxCannonNum(24);
 constexpr int kMaxIceNum(54);
 
-static bool kIsImCoffee(false);  // 是否要补模仿咖啡豆
 static bool kIsImIce(false);  //是否要补模仿寒冰菇
 static bool kIsRun(false);  // 标志PCC是否正在运行中
 static char kScene('\0');  // 场地（泳池为“P”，白天为“D”，以此类推）
 static double kScreenHeight(0.);  // 屏幕的高
 static double kScreenWidth(0.);  // 屏幕的宽
 static int kCannonNum(0);  // 炮的数量
-static int kCoffeeCard(0);  // 咖啡豆是第几张卡
+static int kCoffeeCard(0);  // 咖啡豆（模仿咖啡豆）是第几张卡
 static int kIceCard(0);  // 冰是第几张卡
-static int kIceNum(0);  // 冰的数量
-static int kImCoffeeCard(0);  // 模仿咖啡豆是第几张卡
+static int kIceNum(0);  // 冰位的数量
+static int kImCoffeeTime(0);  // 是否使用模仿咖啡豆
 static int kImIceCard(0);  // 模仿冰是第几张卡
 static int kNowCannon(0);  // 现在开到第几门炮了
 static int kNowIce(0);  // 现在点到第几株冰了
@@ -120,8 +119,8 @@ void FillIce(void) {
       auto now_task(kUsedIce.front());
       kUsedIce.pop();
 
-      if (GetTimeStamp() - now_task.first < 1990 + 1000)
-        Sleep(1990 + 1000 - (GetTimeStamp() - now_task.first));
+      if (GetTimeStamp() - now_task.first < kImCoffeeTime + 1990 + 1000)
+        Sleep(kImCoffeeTime + 1990 + 1000 - (GetTimeStamp() - now_task.first));
 
       if (kImIceCard) {
         if (kIsImIce) {
@@ -218,8 +217,8 @@ void UsedCannon(std::queue<std::pair<time_t, int> >* used_cannons) {
 // 初始化键控器
 bool InitController(char scene, int cannon_num, int cannon_list[][5],
                     std::queue<std::pair<time_t, int> >** used_cannons,
-                    int ice_num, int ice_list[][5], int coffee_card,
-                    int im_coffee_card, int ice_card, int im_ice_card) {
+                    int ice_num, int ice_list[][5], bool is_im_coffee,
+                    int coffee_card, int ice_card, int im_ice_card) {
   // 设置输出编码为UTF-8
   SetConsoleOutputCP(65001);
 
@@ -246,9 +245,9 @@ bool InitController(char scene, int cannon_num, int cannon_list[][5],
   std::copy(&ice_list[0][0], &ice_list[0][0] + kMaxIceNum * 5,
             &kIceList[0][0]);
 
-  // 获取咖啡豆、模仿咖啡豆、冰和模仿冰的植物卡位置
+  // 获取咖啡豆、冰和模仿冰的植物卡位置
   kCoffeeCard = coffee_card;
-  kImCoffeeCard = im_coffee_card;
+  kImCoffeeTime = is_im_coffee ? 3200 : 0;
   kIceCard = ice_card;
   kImIceCard = im_ice_card;
 
@@ -521,27 +520,9 @@ void StartIceFiller(void) {
 // 点冰
 void WakeIce(void) {
   kNowIce %= kIceNum;
-
-  if (kImCoffeeCard) {
-    if (kIsImCoffee) {
-      Card(kImCoffeeCard);
-      Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
-      printf_s("已将模仿咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
-               kIceList[kNowIce][1]);
-    } else {
-      Card(kCoffeeCard);
-      Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
-      printf_s("已将咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
-               kIceList[kNowIce][1]);
-    }
-
-    kIsImCoffee = !kIsImCoffee;
-  } else {
-    Card(kCoffeeCard);
-    Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
-    printf_s("已将咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
-             kIceList[kNowIce][1]);
-  }
-
+  Card(kCoffeeCard);
+  Pnt(std::make_pair(kIceList[kNowIce][0], kIceList[kNowIce][1]));
+  printf_s("已将咖啡豆种在第%d路、第%d列\n", kIceList[kNowIce][0],
+           kIceList[kNowIce][1]);
   kUsedIce.push(std::make_pair(GetTimeStamp(), kNowIce++));
 }
